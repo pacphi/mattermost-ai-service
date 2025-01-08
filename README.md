@@ -116,3 +116,7 @@ If you would like to swap LLM providers from Open AI to Groq Cloud, then you mus
 export CHAT_MODEL=llama-3.3-70b-versatile && \
 mvn spring-boot:run -Dspring-boot.run.arguments=--spring.profiles.active=groq-cloud,dev
 ```
+
+## How to deploy to Tanzu Platform for Cloud Foundry
+
+Refer to the instructions [here](docs/TP4CF.md).
