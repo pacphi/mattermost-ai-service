@@ -94,8 +94,13 @@ spring:
 Then execute:
 
 ```bash
+export MATTERMOST_BASE_URL=
+export MATTERMOST_USERNAME=
+export MATTERMOST_PASSWORD=
 mvn spring-boot:run
 ```
+
+> Add appropriate values for each of the required `MATTERMOST_` prefixed environment variables above.
 
 Open your favorite browser and visit `http://localhost:8080`.
 
