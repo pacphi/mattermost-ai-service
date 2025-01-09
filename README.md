@@ -17,8 +17,8 @@ Demonstrate two types of chat interactions with a Mattermost instance leveraging
 
 Use-cases:
 
-* Ingest a Mattermost channel into a VectorStore, then chat with that point-in-time corpus of knowledge
-* Chat by configuring tool-calling to ask for insights in real-time
+* [x] Ingest a Mattermost channel into a VectorStore, then chat with that point-in-time corpus of knowledge
+* [ ] Chat by configuring tool-calling to ask for insights in real-time
 
 ## Getting started
 
@@ -103,7 +103,7 @@ If you chose to launch containers with `docker compose` you will first need to c
 
 Open your favorite browser and visit `http://localhost:8080`.
 
-> Back in terminal shell, press Ctrl+C to shutdown.
+> Back in the terminal shell, press Ctrl+C to shutdown.
 
 In case you launched containers with `docker compose`, you can clean everything up by running:
 
