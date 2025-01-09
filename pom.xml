@@ -49,14 +49,14 @@
 	<properties>
 		<java.version>21</java.version>
 		<jackson-databind-nullable.version>0.2.6</jackson-databind-nullable.version>
-		<assertj.version>3.27.0</assertj.version>
-		<cfenv.version>3.3.0</cfenv.version>
+		<assertj.version>3.27.2</assertj.version>
+		<cfenv.version>3.3.1</cfenv.version>
 		<json-io.version>4.30.0</json-io.version>
 		<node.version>v23.4.0</node.version>
 		<npm.version>10.9.2</npm.version>
 		<poi.version>5.3.0</poi.version>
 		<spring-ai.version>1.0.0-M5</spring-ai.version>
-		<spring-doc.version>2.7.0</spring-doc.version>
+		<spring-doc.version>2.8.1</spring-doc.version>
 		<spring-boot-hc5.version>1.0.7</spring-boot-hc5.version>
 		<spring-cloud-bindings.version>2.0.4</spring-cloud-bindings.version>
 	</properties>
@@ -347,6 +347,19 @@
 						</configuration>
 					</execution>
 				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>3.1.0</version>
+				<configuration>
+					<target>
+						<replace file="pom.xml"
+								 token="&lt;artifactId&gt;${artifactId}&lt;/artifactId&gt;"
+								 value="&lt;artifactId&gt;${artifact.id}&lt;/artifactId&gt;"/>
+					</target>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
