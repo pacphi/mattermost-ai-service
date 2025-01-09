@@ -15,6 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/mattermost")
 public class MattermostController {
+
     private static final Logger logger = LoggerFactory.getLogger(MattermostController.class);
 
     private final MattermostService mattermostService;
