@@ -3,15 +3,16 @@ package me.pacphi.mattermost.service.ai;
 import me.pacphi.mattermost.service.ai.chat.ChatService;
 import me.pacphi.mattermost.service.ai.chat.Inquiry;
 import org.apache.commons.collections.CollectionUtils;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 
 
 @RestController
+@RequestMapping("/api/mattermost")
 public class ChatController {
 
     private final ChatService chatService;
@@ -20,7 +21,7 @@ public class ChatController {
         this.chatService = chatService;
     }
 
-    @PostMapping("/api/chat")
+    @PostMapping("/chat")
     public ResponseEntity<String> chat(@RequestBody Inquiry inquiry) {
         if (CollectionUtils.isNotEmpty(inquiry.filter())) {
             return ResponseEntity.ok(chatService.respondToQuestion(inquiry.question(), inquiry.filter()));
@@ -29,7 +30,7 @@ public class ChatController {
         }
     }
 
-    @PostMapping("/api/stream/chat")
+    @PostMapping("/stream/chat")
     public ResponseEntity<Flux<String>> streamChat(@RequestBody Inquiry inquiry) {
         if (CollectionUtils.isNotEmpty(inquiry.filter())) {
             return ResponseEntity.ok(chatService.streamResponseToQuestion(inquiry.question(), inquiry.filter()));
