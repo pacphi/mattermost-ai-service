@@ -1,6 +1,9 @@
-// src/pages/ChatPage.jsx
 import React, { useState, useRef } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 const ChatPage = ({ onNavigate }) => {
     const [question, setQuestion] = useState('');
@@ -71,20 +74,47 @@ const ChatPage = ({ onNavigate }) => {
 
             <div
                 ref={answerContainerRef}
-                className="bg-gray-50 p-4 rounded-lg mb-4 h-96 overflow-y-auto"
+                className="bg-gray-50 p-4 rounded-lg mb-4 h-96 overflow-y-auto prose prose-slate max-w-none"
             >
-                {answer || 'Response will appear here...'}
+                {answer ? (
+                    <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                            code({node, inline, className, children, ...props}) {
+                                const match = /language-(\w+)/.exec(className || '');
+                                return !inline && match ? (
+                                    <SyntaxHighlighter
+                                        language={match[1]}
+                                        PreTag="div"
+                                        style={vscDarkPlus}
+                                        {...props}
+                                    >
+                                        {String(children).replace(/\n$/, '')}
+                                    </SyntaxHighlighter>
+                                ) : (
+                                    <code className={className} {...props}>
+                                        {children}
+                                    </code>
+                                );
+                            }
+                        }}
+                    >
+                        {answer}
+                    </ReactMarkdown>
+                ) : (
+                    'Response will appear here...'
+                )}
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-          <textarea
-              value={question}
-              onChange={(e) => setQuestion(e.target.value)}
-              placeholder="Enter your question..."
-              className="w-full p-2 border rounded-md h-32"
-              disabled={isLoading}
-          />
+                    <textarea
+                        value={question}
+                        onChange={(e) => setQuestion(e.target.value)}
+                        placeholder="Enter your question..."
+                        className="w-full p-2 border rounded-md h-32"
+                        disabled={isLoading}
+                    />
                 </div>
 
                 <button
