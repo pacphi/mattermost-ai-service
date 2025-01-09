@@ -1,0 +1,65 @@
+services:
+  mm-postgres:
+    image: postgres:17-alpine
+    container_name: mattermost-postgres
+    environment:
+      - POSTGRES_USER=mmuser
+      - POSTGRES_PASSWORD=vmrnh3M65GsuDfTK
+      - POSTGRES_DB=mattermost
+    volumes:
+      - mattermost-postgres:/var/lib/postgresql/data
+    networks:
+      - net
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-q", "-d", "mattermost", "-U", "mmuser" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+
+  mattermost:
+    image: mattermost/mattermost-team-edition:release-9
+    volumes:
+      - mattermost-data:/mattermost/data
+      - mattermost-config:/mattermost/config
+      - mattermost-logs:/mattermost/logs
+      - mattermost-plugins:/mattermost/plugins
+      - mattermost-client-plugins:/mattermost/client/plugins
+      - mattermost-bleve-indexes:/mattermost/bleve-indexes
+    ports:
+      - "8065:8065"
+    environment:
+      TZ: America/Los_Angeles
+      MM_SQLSETTINGS_DRIVERNAME: postgres
+      MM_SQLSETTINGS_DATASOURCE: postgres://mmuser:vmrnh3M65GsuDfTK@mm-postgres:5432/mattermost?sslmode=disable&connect_timeout=10
+      MM_BLEVESETTINGS_INDEXDIR: /mattermost/bleve-indexes
+      MM_SERVICESETTINGS_FORWARD80TO443: 'false'
+      MATTERMOST_CONTAINER_READONLY: 'false'
+    networks:
+      - net
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 200
+    read_only: false
+    tmpfs:
+      - /tmp
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8065/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 90s
+    restart: unless-stopped
+    depends_on:
+      mm-postgres:
+        condition: service_healthy
+
+volumes:
+  mattermost-data:
+  mattermost-config:
+  mattermost-logs:
+  mattermost-plugins:
+  mattermost-client-plugins:
+  mattermost-bleve-indexes:
+  mattermost-postgres:

@@ -1,32 +1,4 @@
 services:
-  phoenix:
-    image: arizephoenix/phoenix:version-5.12.0
-    depends_on:
-      - arize_db
-    ports:
-      - 6006:6006
-      - 4317:4317
-    environment:
-      - PHOENIX_SQL_DATABASE_URL=postgresql://arize:arize@arize_db:5432/phoenix
-    networks:
-      - net
-
-  arize_db:
-    image: postgres:17
-    restart: always
-    environment:
-      - POSTGRES_USER=arize
-      - POSTGRES_PASSWORD=arize
-      - POSTGRES_DB=phoenix
-    labels:
-      org.springframework.boot.ignore: true
-    expose:
-      - 5432
-    volumes:
-      - arize-db-data:/var/lib/postgresql/data
-    networks:
-      - net
-
   zipkin:
     image: openzipkin/zipkin-slim:3
     container_name: zipkin
@@ -57,5 +29,4 @@ services:
       - net
 
 volumes:
-  arize-db-data: {}
   grafana-storage: {}

@@ -98,18 +98,6 @@
 			<scope>runtime</scope>
 			<optional>true</optional>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-docker-compose</artifactId>
-			<scope>runtime</scope>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.ai</groupId>
-			<artifactId>spring-ai-spring-boot-docker-compose</artifactId>
-			<scope>runtime</scope>
-			<optional>true</optional>
-		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
@@ -373,5 +361,105 @@
 			</snapshots>
 		</repository>
 	</repositories>
+
+	<!-- Model API Provider Profiles -->
+	<profiles>
+		<profile>
+			<id>ollama</id>
+			<activation>
+				<property>
+					<name>model-api-provider</name>
+					<value>ollama</value>
+				</property>
+			</activation>
+			<dependencies>
+				<dependency>
+					<groupId>org.springframework.ai</groupId>
+					<artifactId>spring-ai-ollama-spring-boot-starter</artifactId>
+				</dependency>
+			</dependencies>
+		</profile>
+
+		<!-- Vector DB Provider Profiles -->
+		<profile>
+			<id>chroma</id>
+			<activation>
+				<property>
+					<name>vector-db-provider</name>
+					<value>chroma</value>
+				</property>
+			</activation>
+			<dependencies>
+				<dependency>
+					<groupId>org.springframework.ai</groupId>
+					<artifactId>spring-ai-chroma-store-spring-boot-starter</artifactId>
+				</dependency>
+			</dependencies>
+		</profile>
+
+		<profile>
+			<id>gemfire</id>
+			<activation>
+				<property>
+					<name>vector-db-provider</name>
+					<value>gemfire</value>
+				</property>
+			</activation>
+			<dependencies>
+				<dependency>
+					<groupId>org.springframework.ai</groupId>
+					<artifactId>spring-ai-gemfire-store-spring-boot-starter</artifactId>
+				</dependency>
+			</dependencies>
+		</profile>
+
+		<profile>
+			<id>pgvector</id>
+			<activation>
+				<property>
+					<name>vector-db-provider</name>
+					<value>pgvector</value>
+				</property>
+			</activation>
+			<dependencies>
+				<dependency>
+					<groupId>org.springframework.ai</groupId>
+					<artifactId>spring-ai-pgvector-store-spring-boot-starter</artifactId>
+				</dependency>
+			</dependencies>
+		</profile>
+
+		<profile>
+			<id>redis</id>
+			<activation>
+				<property>
+					<name>vector-db-provider</name>
+					<value>redis</value>
+				</property>
+			</activation>
+			<dependencies>
+				<dependency>
+					<groupId>org.springframework.ai</groupId>
+					<artifactId>spring-ai-redis-store-spring-boot-starter</artifactId>
+				</dependency>
+			</dependencies>
+		</profile>
+
+		<profile>
+			<id>weaviate</id>
+			<activation>
+				<property>
+					<name>vector-db-provider</name>
+					<value>weaviate</value>
+				</property>
+			</activation>
+			<dependencies>
+				<dependency>
+					<groupId>org.springframework.ai</groupId>
+					<artifactId>spring-ai-weaviate-store-spring-boot-starter</artifactId>
+				</dependency>
+			</dependencies>
+		</profile>
+	</profiles>
 
 </project>

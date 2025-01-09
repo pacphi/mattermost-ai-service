@@ -2,11 +2,6 @@ spring:
   application:
     name: Mattermost AI Service
 
-  profiles:
-    include:
-      - openai
-      - dev
-
   httpclient5:
     pool:
       default-connection-config:
@@ -19,10 +14,6 @@ spring:
   threads:
     virtual:
       enabled: true
-
-  docker:
-    compose:
-      enabled: false
 
 management:
   info:
@@ -60,26 +51,26 @@ server:
     max-swallow-size: -1
 
 mattermost:
-  base-url: ${MATTERMOST_BASE_URL}
+  base-url: ${MATTERMOST_BASE_URL:http://localhost:8065}
   credentials:
-    username: ${MATTERMOST_USERNAME}
-    password: ${MATTERMOST_PASSWORD}
+    username: ${MATTERMOST_USERNAME:mmadmin}
+    password: ${MATTERMOST_PASSWORD:mmp@ssw0rd}
 admin:
-  url: ${MATTERMOST_BASE_URL}
+  url: ${mattermost.base-url}
 channels:
-  url: ${MATTERMOST_BASE_URL}
+  url: ${mattermost.base-url}
 files:
-  url: ${MATTERMOST_BASE_URL}
+  url: ${mattermost.base-url}
 posts:
-  url: ${MATTERMOST_BASE_URL}
+  url: ${mattermost.base-url}
 preferences:
-  url: ${MATTERMOST_BASE_URL}
+  url: ${mattermost.base-url}
 teams:
-  url: ${MATTERMOST_BASE_URL}
+  url: ${mattermost.base-url}
 users:
-  url: ${MATTERMOST_BASE_URL}
+  url: ${mattermost.base-url}
 webhooks:
-  url: ${MATTERMOST_BASE_URL}
+  url: ${mattermost.base-url}
 
 ---
 
@@ -160,17 +151,61 @@ spring:
 spring:
   config:
     activate:
-      on-profile: docker
+      on-profile: chroma
 
-  docker:
-    compose:
-      enabled: true
-      lifecycle-management: start-and-stop
-      stop:
-        command: down
-        arguments: -v
-      timeout: 1m
+  ai:
+    vectorstore:
+      chroma:
+        initialize-schema: true
 
+---
+
+spring:
+  config:
+    activate:
+      on-profile: pgvector
+
+  datasource:
+    driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME:org.postgresql.Driver}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/pgvector}
+    username: ${SPRING_DATASOURCE_USER:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+
+  ai:
+    vectorstore:
+      pgvector:
+        initialize-schema: true
+        index-type: HNSW
+        distance-type: COSINE_DISTANCE
+        dimensions: ${SPRING_AI_VECTORSTORE_PGVECTOR_DIMENSIONS:768}
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: redis
+
+  ai:
+    vectorstore:
+      redis:
+        uri: ${SPRING_REDIS_URI:redis://localhost:6379}
+        initialize-schema: true
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: weaviate
+
+  ai:
+    vectorstore:
+      weaviate:
+        host: ${WEAVIATE_HOST:localhost:8088}
+        scheme: ${WEAVIATE_SCHEME:http}
+        initialize-schema: true
+          
 ---
 
 spring:
@@ -185,6 +220,9 @@ spring:
         timeout: 15m
         max-retries: 3
         keep_alive: 15m
+    vectorstore:
+      pgvector:
+        remove-existing-vector-store-table: true
 
 debug: true
 

@@ -9,6 +9,7 @@
   * [Clone](#how-to-clone)
   * [Build](#how-to-build)
   * [Run](#how-to-run)
+  * [Deploy to Tanzu Platform for Cloud Foundry](#how-to-deploy-to-tanzu-platform-for-cloud-foundry)
 
 ## Background
 
@@ -28,9 +29,12 @@ I got started with:
 * This Spring Initializr [configuration](https://start.spring.io/#!type=maven-project&language=java&platformVersion=3.4.1&packaging=jar&jvmVersion=21&groupId=me.pacphi&artifactId=mattermost-ai-service&name=Mattermost%20AI%20Service&description=Demonstrate%20two%20types%20of%20chat%20interactions%20with%20a%20Mattermost%20instance%20leveraging%20Mattermost%20OpenAPI%20v3%20spec%20and%20Spring%20AI&packageName=me.pacphi.mattermost&dependencies=spring-ai-openai,web,configuration-processor,devtools,docker-compose)
 * Mattermost 
   * credentials (i.g., username, password)
+* An LLM provider
+  * one of Groq Cloud, OpenAI, or Ollama
 
 ## Prerequisites
 
+* Docker Compose
 * Git CLI
 * An Open AI or Groq Cloud account
 * Java SDK 21
@@ -77,44 +81,34 @@ cd mattermost-ai-service
 mvn clean package
 ```
 
+For more exotic build and packaging alternatives, refer to the guide [here](docs/BUILD.md).
+
 ## How to run
 
-After building and before attempting to run you must:
-
-* create a `config` folder which would be a sibling of the `src` folder.  Create a file named `creds.yml` inside that folder.  Add your own API key into that file.
-
-```yaml
-spring:
-  ai:
-    openai:
-      api-key: {REDACTED}
-```
-> Replace `{REDACTED}` above with your Groq Cloud or OpenAI API key.
-
-Then execute:
+Set these environment variables
 
 ```bash
 export MATTERMOST_BASE_URL=
 export MATTERMOST_USERNAME=
 export MATTERMOST_PASSWORD=
-mvn spring-boot:run
 ```
 
 > Add appropriate values for each of the required `MATTERMOST_` prefixed environment variables above.
+
+Refer to [this guide](docs/RUN.md) to understand the various run configuration alternatives available.
+
+If you chose to launch containers with `docker compose` you will first need to create a Mattermost account.  Visit http://localhost:8065 to do that.
+
+> Make sure to use the same credentials as you had exported above.  Or if you forgot to set the environment variables, just use the defaults as declared in [application.yml](src/main/resources/application.yml).
 
 Open your favorite browser and visit `http://localhost:8080`.
 
 > Back in terminal shell, press Ctrl+C to shutdown.
 
-### Spring profiles
-
-The `default` profile automatically activates the `openai` and `dev` profiles as specified in [application.yml](src/main/resources/application.yml).
-
-If you would like to swap LLM providers from Open AI to Groq Cloud, then you must add a command-line argument, e.g.
+In case you launched containers with `docker compose`, you can clean everything up by running:
 
 ```bash
-export CHAT_MODEL=llama-3.3-70b-versatile && \
-mvn spring-boot:run -Dspring-boot.run.arguments=--spring.profiles.active=groq-cloud,dev
+docker stop $(docker ps -a -q) && docker rm $(docker ps -a -q) && docker volume rm $(docker volume ls -q)
 ```
 
 ## How to deploy to Tanzu Platform for Cloud Foundry
