@@ -1,10 +1,24 @@
-import React from 'react';
-import Chat from './components/Chat.jsx';
+// src/App.jsx
+import React, { useState } from 'react';
+import IngestionPage from './pages/IngestionPage';
+import ChatPage from './pages/ChatPage';
 
-const App = () => (
-  <div className="container mx-auto px-4">
-    <Chat />
-  </div>
-);
+const App = () => {
+    const [currentPage, setCurrentPage] = useState('ingestion');
+
+    const handleNavigate = (page) => {
+        setCurrentPage(page);
+    };
+
+    return (
+        <div>
+            {currentPage === 'ingestion' ? (
+                <IngestionPage onNavigate={handleNavigate} />
+            ) : (
+                <ChatPage onNavigate={handleNavigate} />
+            )}
+        </div>
+    );
+};
 
 export default App;
