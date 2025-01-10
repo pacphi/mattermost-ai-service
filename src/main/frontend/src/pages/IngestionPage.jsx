@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2 } from 'lucide-react';
+import TimeRangeSelector from '@/components/ui/TimeRangeSelector';
 
 const IngestionPage = ({ onNavigate }) => {
     const [channels, setChannels] = useState([]);
     const [selectedChannel, setSelectedChannel] = useState('');
+    const [selectedTimestamp, setSelectedTimestamp] = useState(null);
     const [alert, setAlert] = useState({ show: false, message: '', type: '' });
     const [isLoading, setIsLoading] = useState(false);
 
@@ -26,6 +27,10 @@ const IngestionPage = ({ onNavigate }) => {
         }
     };
 
+    const handleTimeRangeChange = (timestamp) => {
+        setSelectedTimestamp(timestamp);
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!selectedChannel) {
@@ -33,16 +38,29 @@ const IngestionPage = ({ onNavigate }) => {
             return;
         }
 
+        if (!selectedTimestamp) {
+            showAlert('Please select a time range', 'warning');
+            return;
+        }
+
         setIsLoading(true);
         try {
-            const response = await fetch(`/api/mattermost/ingest?channelId=${selectedChannel}`, {
-                method: 'POST',
-            });
+            if (isNaN(selectedTimestamp)) {
+                throw new Error('Invalid timestamp');
+            }
+
+            const response = await fetch(
+                `/api/mattermost/ingest?channelId=${selectedChannel}&since=${selectedTimestamp}`,
+                {
+                    method: 'POST',
+                }
+            );
 
             if (!response.ok) throw new Error('Ingestion failed');
             showAlert('Ingestion successful!', 'success');
         } catch (error) {
             showAlert('Error during ingestion', 'error');
+            console.error('Ingestion error:', error);
         } finally {
             setIsLoading(false);
         }
@@ -58,7 +76,7 @@ const IngestionPage = ({ onNavigate }) => {
             <h1 className="text-2xl font-bold mb-6">Mattermost AI Service: Channel Posts Ingestion Interface</h1>
 
             {alert.show && (
-                <Alert className={`mb-4 ${alert.type === 'error' ? 'bg-red-100' : 'bg-green-100'}`}>
+                <Alert className={`mb-4 ${alert.type === 'error' ? 'bg-red-100' : alert.type === 'warning' ? 'bg-yellow-100' : 'bg-green-100'}`}>
                     <AlertDescription>{alert.message}</AlertDescription>
                 </Alert>
             )}
@@ -81,6 +99,16 @@ const IngestionPage = ({ onNavigate }) => {
                             </option>
                         ))}
                     </select>
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium mb-2">
+                        Select Time Range
+                    </label>
+                    <TimeRangeSelector
+                        onValueChange={handleTimeRangeChange}
+                        disabled={isLoading}
+                    />
                 </div>
 
                 <button

@@ -1,12 +1,17 @@
 package me.pacphi.mattermost.service;
 
-import me.pacphi.mattermost.model.*;
+import me.pacphi.mattermost.model.ChannelWithTeamData;
+import me.pacphi.mattermost.model.Post;
+import me.pacphi.mattermost.model.Team;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 /**
@@ -26,10 +31,14 @@ public class MattermostController {
 
     @GetMapping("/channels/{channelId}/posts")
     public ResponseEntity<List<Post>> getChannelPosts(
-            @PathVariable String channelId) {
-        logger.info("Received request for posts in channel: {}", channelId);
+            @PathVariable String channelId, @RequestParam("since") Long since) {
+        LocalDateTime timestamp = LocalDateTime.ofInstant(
+                Instant.ofEpochMilli(since),
+                ZoneId.systemDefault()
+        );
+        logger.info("Received request for posts in channel {} since {}", channelId, timestamp);
         try {
-            List<Post> posts = mattermostService.getChannelPosts(channelId);
+            List<Post> posts = mattermostService.getChannelPosts(channelId, since);
             return ResponseEntity.ok(posts);
         } catch (MattermostAuthenticationException e) {
             logger.error("Authentication error while fetching posts", e);

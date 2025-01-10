@@ -4,12 +4,19 @@ import feign.FeignException;
 import me.pacphi.mattermost.api.ChannelsApiClient;
 import me.pacphi.mattermost.api.PostsApiClient;
 import me.pacphi.mattermost.api.TeamsApiClient;
-import me.pacphi.mattermost.model.*;
+import me.pacphi.mattermost.model.ChannelWithTeamData;
+import me.pacphi.mattermost.model.Post;
+import me.pacphi.mattermost.model.PostList;
+import me.pacphi.mattermost.model.Team;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -36,8 +43,12 @@ public class MattermostService {
         this.channelsApiClient = channelsApiClient;
     }
 
-    public List<Post> getChannelPosts(String channelId) {
-        logger.debug("Fetching posts for channel: {}", channelId);
+    public List<Post> getChannelPosts(String channelId, Long since) {
+        LocalDateTime timestamp = LocalDateTime.ofInstant(
+                Instant.ofEpochMilli(since),
+                ZoneId.systemDefault()
+        );
+        logger.debug("Fetching posts for channel {} since {}", channelId, timestamp);
         List<Post> allPosts = new ArrayList<>();
         int page = 0;
         PostList response;
@@ -55,9 +66,11 @@ public class MattermostService {
                         ).getBody();
 
                 if (response == null || response.getPosts() == null || response.getPosts().isEmpty()) {
+                    logger.info("-- No posts found for channel {} since {}", channelId, timestamp);
                     break;
                 }
-                allPosts.addAll(response.getPosts().values());
+                Collection<Post> posts = response.getPosts().values();
+                allPosts.addAll(filterPosts(posts, since));
                 page++;
                 TimeUnit.MILLISECONDS.sleep(RATE_LIMIT_DELAY);
             } catch (InterruptedException e) {
@@ -71,6 +84,10 @@ public class MattermostService {
         } while (!response.getPosts().isEmpty());
 
         return allPosts;
+    }
+
+    private Collection<Post> filterPosts(Collection<Post> posts, Long since) {
+        return posts.stream().filter(p -> p.getCreateAt() >= since).toList();
     }
 
     public List<ChannelWithTeamData> getAllChannels() {

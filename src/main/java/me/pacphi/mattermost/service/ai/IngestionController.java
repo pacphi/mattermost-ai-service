@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 @RestController
@@ -30,11 +33,23 @@ public class IngestionController {
     }
 
     @PostMapping("/ingest")
-    public ResponseEntity<Void> ingestPostsFromChannel(@RequestParam("channelId") String channelId) {
-        logger.info("Received request for ingesting posts in channel: {}", channelId);
+    public ResponseEntity<Void> ingestPostsFromChannel(@RequestParam("channelId") String channelId, @RequestParam("since") Long since) {
+        LocalDateTime timestamp = LocalDateTime.ofInstant(
+                Instant.ofEpochMilli(since),
+                ZoneId.systemDefault()
+        );
+        logger.info("Received request for posts in channel {} since {}", channelId, timestamp);
         try {
-            List<Post> posts = mattermostService.getChannelPosts(channelId);
-            posts.forEach(ingestionService::ingest);
+            List<Post> posts = mattermostService.getChannelPosts(channelId, since);
+            posts.forEach(p -> {
+                logger.info(
+                        "-- Ingesting post [ id: {}, created: {}, message (truncated): {} ]",
+                        p.getId(),
+                        LocalDateTime.ofInstant(Instant.ofEpochMilli(p.getCreateAt()), ZoneId.systemDefault()),
+                        p.getMessage().length() > 10 ? p.getMessage().substring(0,10): p.getMessage()
+                );
+                ingestionService.ingest(p);
+            });
             return ResponseEntity.status(HttpStatus.OK).build();
         } catch (MattermostAuthenticationException e) {
             logger.error("Authentication error while fetching posts", e);
