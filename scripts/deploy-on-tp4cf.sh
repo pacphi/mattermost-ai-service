@@ -42,6 +42,7 @@ if  [[ -f ${HOME}/.mattermost/config ]]; then
 # export MATTERMOST_BASE_URL=<mattermost-base-url>
 # export MATTERMOST_USERNAME='<your_admin_account_username>'
 # export MATTERMOST_PASSWORD='<your_admin_account_password>'
+# export MATTERMOST_PERSONAL_ACCESS_TOKEN='<your_admin_readonly_personal_access_token>'
 
     source $HOME/.mattermost/config
 fi

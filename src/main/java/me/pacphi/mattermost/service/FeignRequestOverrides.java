@@ -1,18 +1,15 @@
 package me.pacphi.mattermost.service;
 
 import feign.RequestInterceptor;
-import org.openapitools.configuration.ClientConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.Set;
 
 @Configuration
 class FeignRequestOverrides {
 
-    private final AuthenticationService authenticationService;
+    private final AuthenticationStrategy authenticationService;
 
-    FeignRequestOverrides(AuthenticationService authenticationService) {
+    FeignRequestOverrides(AuthenticationStrategy authenticationService) {
         this.authenticationService = authenticationService;
     }
 

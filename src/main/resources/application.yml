@@ -55,6 +55,7 @@ mattermost:
   credentials:
     username: ${MATTERMOST_USERNAME:mmadmin}
     password: ${MATTERMOST_PASSWORD:mmp@ssw0rd}
+    token: ${MATTERMOST_PERSONAL_ACCESS_TOKEN:}
 admin:
   url: ${mattermost.base-url}
 channels:

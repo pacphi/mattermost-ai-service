@@ -87,6 +87,8 @@ For more exotic build and packaging alternatives, refer to the guide [here](docs
 
 Set these environment variables
 
+### with username and password
+
 ```bash
 export MATTERMOST_BASE_URL=
 export MATTERMOST_USERNAME=
@@ -94,6 +96,15 @@ export MATTERMOST_PASSWORD=
 ```
 
 > Add appropriate values for each of the required `MATTERMOST_` prefixed environment variables above.
+
+### with a personal access token
+
+```bash
+export MATTERMOST_BASE_URL=
+export MATTERMOST_PERSONAL_ACCESS_TOKEN=
+```
+
+> Likewise, add appropriate values for each of the required `MATTERMOST_` prefixed environment variables above.
 
 Refer to [this guide](docs/RUN.md) to understand the various run configuration alternatives available.
 
