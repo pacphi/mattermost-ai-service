@@ -116,7 +116,11 @@ mkdir -p $HOME/.mattermost
 touch $HOME/.mattermost/config
 ```
 
-Edit the above file and make sure it has the following environment variables exported:
+Edit the above file and make sure it has either comination of the following environment variables exported:
+
+> Replace the values below enclosed in `<>` with appropriate values for your instance.  Note: if the instance is hosted on Stackhero, the first attempt to login will force you to create a new account which will grant admin access.
+
+#### with username and password
 
 ```python
 export MATTERMOST_BASE_URL=<mattermost-base-url>
@@ -124,8 +128,12 @@ export MATTERMOST_USERNAME='<your_admin_account_username>'
 export MATTERMOST_PASSWORD='<your_admin_account_password>'
 ```
 
-> Replace the values above enclosed in `<>` with appropriate values for your instance.  Note: if the instance is hosted on Stackhero, the first attempt to login will force you to create a new account which will grant admin access.
+#### with personal access token
 
+```python
+export MATTERMOST_BASE_URL=<mattermost-base-url>
+export MATTERMOST_PERSONAL_ACCESS_TOKEN='<your_perosnal_access_token>'
+```
 
 ### Clone and build the app
 
