@@ -10,6 +10,8 @@ import java.util.List;
 
 class ChatServiceHelper {
 
+    private static int MAXIMUM_NUMBER_OF_SIMILAR_DOCUMENTS = 10;
+
     static VectorStoreDocumentRetriever.Builder constructDocumentRetriever(VectorStore vectorStore, List<FilterMetadata> filterMetadata) {
         FilterExpressionBuilder b = new FilterExpressionBuilder();
         FilterExpressionBuilder.Op filterExpression = null;
@@ -34,7 +36,8 @@ class ChatServiceHelper {
 
         VectorStoreDocumentRetriever.Builder vsdrb = VectorStoreDocumentRetriever
                 .builder()
-                .vectorStore(vectorStore);
+                .vectorStore(vectorStore)
+                .topK(MAXIMUM_NUMBER_OF_SIMILAR_DOCUMENTS);
         if (filterExpression != null) {
             vsdrb.filterExpression(filterExpression.build());
         }
