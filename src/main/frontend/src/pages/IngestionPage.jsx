@@ -3,6 +3,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import TimeRangeSelector from '@/components/ui/TimeRangeSelector';
 
 const IngestionPage = ({ onNavigate }) => {
+    const [teams, setTeams] = useState([]);
+    const [selectedTeam, setSelectedTeam] = useState('');
     const [channels, setChannels] = useState([]);
     const [selectedChannel, setSelectedChannel] = useState('');
     const [selectedTimestamp, setSelectedTimestamp] = useState(null);
@@ -10,13 +12,37 @@ const IngestionPage = ({ onNavigate }) => {
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
-        fetchChannels();
+        fetchTeams();
     }, []);
 
-    const fetchChannels = async () => {
+    // Fetch channels whenever selected team changes
+    useEffect(() => {
+        if (selectedTeam) {
+            fetchChannels(selectedTeam);
+        } else {
+            setChannels([]);
+            setSelectedChannel('');
+        }
+    }, [selectedTeam]);
+
+    const fetchTeams = async () => {
         setIsLoading(true);
         try {
-            const response = await fetch('/api/mattermost/channels');
+            const response = await fetch('/api/mattermost/teams');
+            if (!response.ok) throw new Error('Failed to fetch teams');
+            const data = await response.json();
+            setTeams(data);
+        } catch (error) {
+            showAlert('Error fetching teams', 'error');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const fetchChannels = async (teamName) => {
+        setIsLoading(true);
+        try {
+            const response = await fetch(`/api/mattermost/teams/${teamName}/channels`);
             if (!response.ok) throw new Error('Failed to fetch channels');
             const data = await response.json();
             setChannels(data);
@@ -31,8 +57,17 @@ const IngestionPage = ({ onNavigate }) => {
         setSelectedTimestamp(timestamp);
     };
 
+    const handleTeamChange = (e) => {
+        setSelectedTeam(e.target.value);
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (!selectedTeam) {
+            showAlert('Please select a team', 'warning');
+            return;
+        }
+
         if (!selectedChannel) {
             showAlert('Please select a channel', 'warning');
             return;
@@ -84,13 +119,32 @@ const IngestionPage = ({ onNavigate }) => {
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                     <label className="block text-sm font-medium mb-2">
+                        Select Team
+                    </label>
+                    <select
+                        value={selectedTeam}
+                        onChange={handleTeamChange}
+                        className="w-full p-2 border rounded-md"
+                        disabled={isLoading}
+                    >
+                        <option value="">Select a team...</option>
+                        {teams.map((team) => (
+                            <option key={team.id} value={team.name}>
+                                {team.display_name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium mb-2">
                         Select Channel
                     </label>
                     <select
                         value={selectedChannel}
                         onChange={(e) => setSelectedChannel(e.target.value)}
                         className="w-full p-2 border rounded-md"
-                        disabled={isLoading}
+                        disabled={isLoading || !selectedTeam}
                     >
                         <option value="">Select a channel...</option>
                         {channels.map((channel) => (

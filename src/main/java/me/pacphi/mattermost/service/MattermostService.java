@@ -4,10 +4,8 @@ import feign.FeignException;
 import me.pacphi.mattermost.api.ChannelsApiClient;
 import me.pacphi.mattermost.api.PostsApiClient;
 import me.pacphi.mattermost.api.TeamsApiClient;
-import me.pacphi.mattermost.model.ChannelWithTeamData;
-import me.pacphi.mattermost.model.Post;
-import me.pacphi.mattermost.model.PostList;
-import me.pacphi.mattermost.model.Team;
+import me.pacphi.mattermost.model.*;
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -30,17 +28,38 @@ public class MattermostService {
     private static final int RATE_LIMIT_DELAY = 250;
     private static final Logger logger = LoggerFactory.getLogger(MattermostService.class);
 
+    private final ChannelsApiClient channelsApiClient;
     private final PostsApiClient postsApiClient;
     private final TeamsApiClient teamsApiClient;
-    private final ChannelsApiClient channelsApiClient;
+    private final AuthenticationStrategy authenticationService;
 
     public MattermostService(
+            ChannelsApiClient channelsApiClient,
             PostsApiClient postsApiClient,
             TeamsApiClient teamsApiClient,
-            ChannelsApiClient channelsApiClient) {
+            AuthenticationStrategy authenticationService) {
+        this.channelsApiClient = channelsApiClient;
         this.postsApiClient = postsApiClient;
         this.teamsApiClient = teamsApiClient;
-        this.channelsApiClient = channelsApiClient;
+        this.authenticationService = authenticationService;
+    }
+
+    public List<Channel> getChannelsForTeam(String teamName) {
+        List<Channel> result = new ArrayList<>();
+        try {
+            User currentUser = authenticationService.getCurrentUser();
+            Team team = teamsApiClient.getTeamByName(teamName).getBody();
+            if (team != null) {
+                List<Channel> channels = channelsApiClient.getChannelsForTeamForUser(currentUser.getId(), team.getId(), null, null).getBody();
+                if (CollectionUtils.isNotEmpty(channels)) {
+                    result.addAll(channels);
+                }
+            }
+            return result;
+        } catch (FeignException e) {
+            logger.error(String.format("Error fetching team %s's channels", teamName), e);
+            throw new MattermostApiException(String.format("Failed to fetch team %s's channels", teamName), e);
+        }
     }
 
     public List<Post> getChannelPosts(String channelId, Long since) {

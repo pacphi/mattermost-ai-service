@@ -1,5 +1,6 @@
 package me.pacphi.mattermost.service;
 
+import me.pacphi.mattermost.model.Channel;
 import me.pacphi.mattermost.model.ChannelWithTeamData;
 import me.pacphi.mattermost.model.Post;
 import me.pacphi.mattermost.model.Team;
@@ -54,6 +55,21 @@ public class MattermostController {
         logger.info("Received request for all channels");
         try {
             List<ChannelWithTeamData> channels = mattermostService.getAllChannels();
+            return ResponseEntity.ok(channels);
+        } catch (MattermostAuthenticationException e) {
+            logger.error("Authentication error while fetching channels", e);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } catch (MattermostApiException e) {
+            logger.error("API error while fetching channels", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/teams/{teamName}/channels")
+    public ResponseEntity<List<Channel>> getChannelsForTeam(@PathVariable String teamName) {
+        logger.info("Received request for channels for team {}", teamName);
+        try {
+            List<Channel> channels = mattermostService.getChannelsForTeam(teamName);
             return ResponseEntity.ok(channels);
         } catch (MattermostAuthenticationException e) {
             logger.error("Authentication error while fetching channels", e);

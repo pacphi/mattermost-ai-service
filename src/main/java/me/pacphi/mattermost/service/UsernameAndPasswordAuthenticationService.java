@@ -4,20 +4,15 @@ import me.pacphi.mattermost.model.LoginRequest;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.RestClient;
 
-public class UsernameAndPasswordAuthenticationService implements AuthenticationStrategy {
+public class UsernameAndPasswordAuthenticationService extends BaseAuthenticationService {
 
-    private final RestClient authClient;
-    private final MattermostProperties props;
     private String authToken;
 
     public UsernameAndPasswordAuthenticationService(MattermostProperties props) {
-        this.authClient =
-                RestClient.builder()
-                    .baseUrl(props.baseUrl())
-                    .build();
-        this.props = props;
+        super(props);
     }
 
+    @Override
     public String authenticate() {
         if (authToken == null) {
             LoginRequest loginRequest = new LoginRequest();
@@ -37,6 +32,7 @@ public class UsernameAndPasswordAuthenticationService implements AuthenticationS
         return authToken;
     }
 
+    @Override
     public void clearToken() {
         authToken = null;
     }
