@@ -3,6 +3,10 @@ package me.pacphi.mattermost.service.ai;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import me.pacphi.mattermost.api.ChannelsApiClient;
+import me.pacphi.mattermost.api.UsersApiClient;
+import me.pacphi.mattermost.model.Post;
+import me.pacphi.mattermost.service.ai.domain.PostLite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.document.Document;
@@ -15,6 +19,9 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -23,17 +30,38 @@ public class IngestionService {
 
     private static final Logger log = LoggerFactory.getLogger(IngestionService.class);
 
+    private final ChannelsApiClient channelsApiClient;
+    private final UsersApiClient usersApiClient;
     private final VectorStore store;
     private final ObjectMapper objectMapper;
     private final TokenTextSplitter splitter = new TokenTextSplitter();
 
-    public IngestionService(VectorStore store, ObjectMapper objectMapper) {
+    public IngestionService(
+            ChannelsApiClient channelsApiClient,
+            UsersApiClient usersApiClient,
+            VectorStore store,
+            ObjectMapper objectMapper) {
+        this.channelsApiClient = channelsApiClient;
+        this.usersApiClient = usersApiClient;
         this.store = store;
         this.objectMapper = objectMapper;
     }
 
-    public void ingest(Object object) {
-        ingest(object, "UTF-8");
+    public void ingest(Post post) {
+        String channel = channelsApiClient.getChannel(post.getChannelId()).getBody().getName();
+        String username = usersApiClient.getUser(post.getUserId()).getBody().getUsername();
+        PostLite postLite = new PostLite(
+            channel,
+            post.getMessage(),
+            username,
+            LocalDateTime.ofInstant(
+                Instant.ofEpochMilli(post.getCreateAt()),
+                ZoneId.systemDefault()),
+            LocalDateTime.ofInstant(
+                    Instant.ofEpochMilli(post.getEditAt()),
+                    ZoneId.systemDefault())
+        );
+        ingest(postLite, "UTF-8");
     }
 
     public void ingest(Object object, String charset) {
