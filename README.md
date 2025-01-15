@@ -2,6 +2,11 @@
 
 [![GA](https://img.shields.io/badge/Release-Alpha-darkred)](https://img.shields.io/badge/Release-Alpha-darkred) ![Github Action CI Workflow Status](https://github.com/pacphi/mattermost-ai-service/actions/workflows/ci.yml/badge.svg) [![Known Vulnerabilities](https://snyk.io/test/github/pacphi/mattermost-ai-service/badge.svg?style=plastic)](https://snyk.io/test/github/pacphi/mattermost-ai-service)
 
+![Ingest](docs/ingest-ui.png)
+
+![Chat](docs/chat-ui.png)
+
+
 * [Background](#background)
 * [Getting started](#getting-started)
 * [Prerequisites](#prerequisites)
