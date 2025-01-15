@@ -4,9 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import me.pacphi.mattermost.api.ChannelsApiClient;
+import me.pacphi.mattermost.api.TeamsApiClient;
 import me.pacphi.mattermost.api.UsersApiClient;
+import me.pacphi.mattermost.model.Channel;
 import me.pacphi.mattermost.model.Post;
-import me.pacphi.mattermost.service.ai.domain.PostLite;
+import me.pacphi.mattermost.model.Team;
+import me.pacphi.mattermost.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.document.Document;
@@ -16,12 +19,10 @@ import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -31,6 +32,7 @@ public class IngestionService {
     private static final Logger log = LoggerFactory.getLogger(IngestionService.class);
 
     private final ChannelsApiClient channelsApiClient;
+    private final TeamsApiClient teamsApiClient;
     private final UsersApiClient usersApiClient;
     private final VectorStore store;
     private final ObjectMapper objectMapper;
@@ -38,39 +40,34 @@ public class IngestionService {
 
     public IngestionService(
             ChannelsApiClient channelsApiClient,
+            TeamsApiClient teamsApiClient,
             UsersApiClient usersApiClient,
             VectorStore store,
             ObjectMapper objectMapper) {
         this.channelsApiClient = channelsApiClient;
+        this.teamsApiClient = teamsApiClient;
         this.usersApiClient = usersApiClient;
         this.store = store;
         this.objectMapper = objectMapper;
     }
 
-    public void ingest(Post post) {
-        String channel = channelsApiClient.getChannel(post.getChannelId()).getBody().getName();
-        String username = usersApiClient.getUser(post.getUserId()).getBody().getUsername();
-        PostLite postLite = new PostLite(
-            channel,
-            post.getMessage(),
-            username,
-            LocalDateTime.ofInstant(
-                Instant.ofEpochMilli(post.getCreateAt()),
-                ZoneId.systemDefault()),
-            LocalDateTime.ofInstant(
-                    Instant.ofEpochMilli(post.getEditAt()),
-                    ZoneId.systemDefault())
+    public void ingest(Post post) throws JsonProcessingException, UnsupportedEncodingException {
+        Assert.notNull(post, "Post cannot be null");
+        Channel channel = channelsApiClient.getChannel(post.getChannelId()).getBody();
+        Assert.notNull(channel, "Channel cannot be null");
+        Team team = teamsApiClient.getTeam(channel.getTeamId()).getBody();
+        Assert.notNull(team, "Team cannot be null");
+        User user = usersApiClient.getUser(post.getUserId()).getBody();
+        Assert.notNull(user, "User cannot be null");
+        AttributedPost attributedPost = new AttributedPost(
+            team, channel, post, user
         );
-        ingest(postLite, "UTF-8");
+        ingest(attributedPost, "UTF-8");
     }
 
-    public void ingest(Object object, String charset) {
-        try {
-            String jsonString = objectMapper.writeValueAsString(object);
-            ingest(new ByteArrayResource(jsonString.getBytes(charset)));
-        } catch (JsonProcessingException | UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
+    private void ingest(Object object, String charset) throws JsonProcessingException, UnsupportedEncodingException {
+        String jsonString = objectMapper.writeValueAsString(object);
+        ingest(new ByteArrayResource(jsonString.getBytes(charset)));
     }
 
     private void ingest(Resource resource) {
@@ -88,11 +85,11 @@ public class IngestionService {
                     try {
                         return new JsonReader(res, extractUniqueKeys(res));
                     } catch (IOException e) {
-                        log.error("Failed to read JSON file", e);
+                        log.error("---- Failed to read JSON file", e);
                         return null;
                     }
                 })
-                .orElseThrow(() -> new RuntimeException("Failed to create JsonReader"));
+                .orElseThrow(() -> new RuntimeException("---- Failed to create JsonReader"));
 
         Map<String, Object> baseMetadata = Optional.ofNullable(resource.getFilename())
                 .map(filename -> {
@@ -116,7 +113,7 @@ public class IngestionService {
             return null;
         }
 
-        return Optional.ofNullable(document.getMetadata())
+        return Optional.of(document.getMetadata())
                 .map(documentMetadata -> documentMetadata.entrySet().stream()
                         .filter(entry -> entry.getKey() != null && entry.getValue() != null)
                         .collect(Collectors.toMap(
@@ -132,7 +129,7 @@ public class IngestionService {
                                 enrichedMetadata
                         );
                     } catch (IllegalArgumentException e) {
-                        log.error("Failed to create document with metadata", e);
+                        log.error("---- Failed to create document with metadata", e);
                         return null;
                     }
                 })
@@ -165,7 +162,7 @@ public class IngestionService {
             });
         } else if (jsonNode.isArray()) {
             // Only process array if it's not empty
-            if (jsonNode.size() > 0) {
+            if (!jsonNode.isEmpty()) {
                 for (int i = 0; i < jsonNode.size(); i++) {
                     JsonNode element = jsonNode.get(i);
                     if (!element.isNull()) {
@@ -184,10 +181,10 @@ public class IngestionService {
             return !node.asText().isEmpty();
         }
         if (node.isArray()) {
-            return node.size() > 0;
+            return !node.isEmpty();
         }
         if (node.isObject()) {
-            return node.size() > 0;
+            return !node.isEmpty();
         }
         // For numbers, booleans, etc.
         return true;

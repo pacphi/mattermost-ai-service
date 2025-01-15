@@ -1,5 +1,6 @@
 package me.pacphi.mattermost.service.ai;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import me.pacphi.mattermost.model.Post;
 import me.pacphi.mattermost.service.MattermostApiException;
 import me.pacphi.mattermost.service.MattermostAuthenticationException;
@@ -13,9 +14,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.UnsupportedEncodingException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -39,18 +42,9 @@ public class IngestionController {
                 ZoneId.systemDefault()
         );
         logger.info("Received request for posts in channel {} since {}", channelId, timestamp);
+        List<Post> posts = new ArrayList<>();
         try {
-            List<Post> posts = mattermostService.getChannelPosts(channelId, since);
-            posts.forEach(p -> {
-                logger.info(
-                        "-- Ingesting post [ id: {}, created: {}, message (truncated): {} ]",
-                        p.getId(),
-                        LocalDateTime.ofInstant(Instant.ofEpochMilli(p.getCreateAt()), ZoneId.systemDefault()),
-                        p.getMessage().length() > 10 ? p.getMessage().substring(0,10): p.getMessage()
-                );
-                ingestionService.ingest(p);
-            });
-            return ResponseEntity.status(HttpStatus.OK).build();
+            posts.addAll(mattermostService.getChannelPosts(channelId, since));
         } catch (MattermostAuthenticationException e) {
             logger.error("Authentication error while fetching posts", e);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -58,6 +52,25 @@ public class IngestionController {
             logger.error("API error while fetching posts", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+        int successes = 0;
+        int failures = 0;
+        for (Post p : posts) {
+            logger.info(
+                    "-- Ingesting post [ id: {}, created: {}, message (truncated): {} ]",
+                    p.getId(),
+                    LocalDateTime.ofInstant(Instant.ofEpochMilli(p.getCreateAt()), ZoneId.systemDefault()),
+                    p.getMessage().length() > 10 ? p.getMessage().substring(0,10): p.getMessage()
+            );
+            try {
+                ingestionService.ingest(p);
+                logger.info("---- Ingested");
+                successes++;
+            } catch (JsonProcessingException | UnsupportedEncodingException | RuntimeException e) {
+                logger.warn("---- Failed", e);
+            }
+        };
+        logger.info("Successfully ingested: {} post(s). Failed to ingest: {} post(s).", successes, failures);
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
 }
