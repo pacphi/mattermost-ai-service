@@ -44,7 +44,7 @@ I got started with:
 * An Open AI or Groq Cloud account
 * Java SDK 21
 * Maven 3.9.9
-* Mattermost OpenAPI v3 [spec](https://api.mattermost.com/v3/static/mattermost-openapi-v3.yaml)
+* Mattermost OpenAPI [spec](https://api.mattermost.com/)
 * yq CLI
 
 ## How to clone
