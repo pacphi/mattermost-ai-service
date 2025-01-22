@@ -23,7 +23,7 @@ Demonstrate two types of chat interactions with a Mattermost instance leveraging
 Use-cases:
 
 * [x] Ingest a Mattermost channel into a VectorStore, then chat with that point-in-time corpus of knowledge
-* [ ] Chat by configuring tool-calling to ask for insights in real-time
+* [x] ~~Chat by configuring tool-calling to ask for insights in real-time~~ Make use of this [Mattermost](https://mattermost.com/marketplace/mattermost-ai-copilot/) [plugin](https://github.com/mattermost/mattermost-plugin-ai) for real time insights.
 
 ## Getting started
 
