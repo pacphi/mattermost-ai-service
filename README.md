@@ -32,7 +32,7 @@ I got started with:
 * A Github [account](https://github.com/signup)
 * A Stackhero [account](https://stackhero.io)
 * This Spring Initializr [configuration](https://start.spring.io/#!type=maven-project&language=java&platformVersion=3.4.2&packaging=jar&jvmVersion=21&groupId=me.pacphi&artifactId=mattermost-ai-service&name=Mattermost%20AI%20Service&description=Demonstrate%20two%20types%20of%20chat%20interactions%20with%20a%20Mattermost%20instance%20leveraging%20Mattermost%20OpenAPI%20v3%20spec%20and%20Spring%20AI&packageName=me.pacphi.mattermost&dependencies=spring-ai-openai,web,configuration-processor,devtools,docker-compose)
-* Mattermost 
+* Mattermost
   * credentials (i.g., username, password)
 * An LLM provider
   * one of Groq Cloud, OpenAI, or Ollama
