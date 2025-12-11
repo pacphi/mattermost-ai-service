@@ -1,8 +1,8 @@
 package me.pacphi.mattermost.service.ai;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import me.pacphi.mattermost.api.ChannelsApiClient;
 import me.pacphi.mattermost.api.TeamsApiClient;
 import me.pacphi.mattermost.api.UsersApiClient;
@@ -51,7 +51,7 @@ public class IngestionService {
         this.objectMapper = objectMapper;
     }
 
-    public void ingest(Post post) throws JsonProcessingException, UnsupportedEncodingException {
+    public void ingest(Post post) throws JacksonException, UnsupportedEncodingException {
         Assert.notNull(post, "Post cannot be null");
         Channel channel = channelsApiClient.getChannel(post.getChannelId()).getBody();
         Assert.notNull(channel, "Channel cannot be null");
@@ -65,7 +65,7 @@ public class IngestionService {
         ingest(attributedPost, "UTF-8");
     }
 
-    private void ingest(Object object, String charset) throws JsonProcessingException, UnsupportedEncodingException {
+    private void ingest(Object object, String charset) throws JacksonException, UnsupportedEncodingException {
         String jsonString = objectMapper.writeValueAsString(object);
         ingest(new ByteArrayResource(jsonString.getBytes(charset)));
     }

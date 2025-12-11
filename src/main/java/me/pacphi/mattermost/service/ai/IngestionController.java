@@ -1,6 +1,6 @@
 package me.pacphi.mattermost.service.ai;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import tools.jackson.core.JacksonException;
 import me.pacphi.mattermost.model.Post;
 import me.pacphi.mattermost.service.MattermostApiException;
 import me.pacphi.mattermost.service.MattermostAuthenticationException;
@@ -65,7 +65,7 @@ public class IngestionController {
                 ingestionService.ingest(p);
                 logger.info("---- Ingested");
                 successes++;
-            } catch (JsonProcessingException | UnsupportedEncodingException | RuntimeException e) {
+            } catch (JacksonException | UnsupportedEncodingException | RuntimeException e) {
                 logger.warn("---- Failed", e);
             }
         };

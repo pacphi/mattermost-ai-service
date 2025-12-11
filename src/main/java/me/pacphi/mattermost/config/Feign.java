@@ -1,12 +1,13 @@
 package me.pacphi.mattermost.config;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.module.SimpleModule;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.*;
+import tools.jackson.databind.deser.std.StdDeserializer;
+import tools.jackson.databind.module.SimpleModule;
 import me.pacphi.mattermost.model.PostMetadata;
 import me.pacphi.mattermost.model.PostMetadataImagesInner;
 import org.springframework.beans.factory.ObjectFactory;
-import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
+import org.springframework.http.converter.HttpMessageConverters;
 import org.springframework.cloud.openfeign.FeignBuilderCustomizer;
 import org.springframework.cloud.openfeign.support.ResponseEntityDecoder;
 import org.springframework.cloud.openfeign.support.SpringDecoder;
@@ -48,7 +49,11 @@ public class Feign {
         }
     }
 
-    public static class PostMetadataDeserializer extends JsonDeserializer<PostMetadata> {
+    public static class PostMetadataDeserializer extends StdDeserializer<PostMetadata> {
+        public PostMetadataDeserializer() {
+            super(PostMetadata.class);
+        }
+
         @Override
         public PostMetadata deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
             JsonNode node = p.getCodec().readTree(p);
