@@ -51,7 +51,7 @@
 		<jackson-databind-nullable.version>0.2.8</jackson-databind-nullable.version>
 		<assertj.version>3.27.6</assertj.version>
 		<cfenv.version>3.5.0</cfenv.version>
-		<json-io.version>4.70.0</json-io.version>
+		<json-io.version>4.72.0</json-io.version>
 		<node.version>v23.4.0</node.version>
 		<npm.version>10.9.2</npm.version>
 		<poi.version>5.4.1</poi.version>
