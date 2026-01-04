@@ -5,14 +5,9 @@ import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import me.pacphi.mattermost.model.PostMetadata;
 import me.pacphi.mattermost.model.PostMetadataImagesInner;
-import org.springframework.beans.factory.ObjectFactory;
-import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.cloud.openfeign.FeignBuilderCustomizer;
-import org.springframework.cloud.openfeign.support.ResponseEntityDecoder;
-import org.springframework.cloud.openfeign.support.SpringDecoder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -24,16 +19,9 @@ public class Feign {
     @Bean
     public FeignBuilderCustomizer feignBuilderCustomizer(ObjectMapper objectMapper) {
         objectMapper.registerModule(new MattermostModule());
-
         return builder -> {
-            MappingJackson2HttpMessageConverter converter =
-                    new MappingJackson2HttpMessageConverter(objectMapper);
-
-            List<HttpMessageConverter<?>> converters = List.of(converter);
-            ObjectFactory<List<HttpMessageConverter<?>>> objectFactory = () -> converters;
-
-            // Chain the decoders - first our custom response entity decoder, then the spring decoder
-            builder.decoder(new ResponseEntityDecoder(new SpringDecoder(objectFactory)));
+            // The decoder configuration is handled by Spring Cloud OpenFeign autoconfiguration
+            // which automatically picks up the customized ObjectMapper
         };
     }
 
