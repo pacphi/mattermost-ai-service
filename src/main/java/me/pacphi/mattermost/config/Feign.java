@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import me.pacphi.mattermost.model.PostMetadata;
 import me.pacphi.mattermost.model.PostMetadataImagesInner;
 import org.springframework.beans.factory.ObjectFactory;
-import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
+import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.cloud.openfeign.FeignBuilderCustomizer;
 import org.springframework.cloud.openfeign.support.ResponseEntityDecoder;
 import org.springframework.cloud.openfeign.support.SpringDecoder;
@@ -29,8 +29,8 @@ public class Feign {
             MappingJackson2HttpMessageConverter converter =
                     new MappingJackson2HttpMessageConverter(objectMapper);
 
-            ObjectFactory<HttpMessageConverters> objectFactory =
-                    () -> new HttpMessageConverters(converter);
+            List<HttpMessageConverter<?>> converters = List.of(converter);
+            ObjectFactory<List<HttpMessageConverter<?>>> objectFactory = () -> converters;
 
             // Chain the decoders - first our custom response entity decoder, then the spring decoder
             builder.decoder(new ResponseEntityDecoder(new SpringDecoder(objectFactory)));
