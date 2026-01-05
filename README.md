@@ -29,7 +29,7 @@ Use-cases:
 
 * Spring Boot 4.0.1
 * Spring AI 2.0.0-M1
-* Spring Cloud 2025.0.0
+* Spring Cloud 2025.1.0
 * Spring Security 7.0.0
 * Java 21
 * Maven 3.9.9
