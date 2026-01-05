@@ -25,6 +25,15 @@ Use-cases:
 * [x] Ingest a Mattermost channel into a VectorStore, then chat with that point-in-time corpus of knowledge
 * [x] ~~Chat by configuring tool-calling to ask for insights in real-time~~ Make use of this [Mattermost](https://mattermost.com/marketplace/mattermost-ai-copilot/) [plugin](https://github.com/mattermost/mattermost-plugin-ai) for real time insights.
 
+## Technologies
+
+* Spring Boot 4.0.1
+* Spring AI 2.0.0-M1
+* Spring Cloud 2025.0.0
+* Spring Security 7.0.0
+* Java 21
+* Maven 3.9.9
+
 ## Getting started
 
 I got started with:

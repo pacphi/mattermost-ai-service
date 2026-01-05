@@ -1,14 +1,14 @@
 package me.pacphi.mattermost.service;
 
-import feign.FeignException;
-import me.pacphi.mattermost.api.ChannelsApiClient;
-import me.pacphi.mattermost.api.PostsApiClient;
-import me.pacphi.mattermost.api.TeamsApiClient;
+import me.pacphi.mattermost.api.ChannelsApi;
+import me.pacphi.mattermost.api.PostsApi;
+import me.pacphi.mattermost.api.TeamsApi;
 import me.pacphi.mattermost.model.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Service class for interacting with Mattermost API using FeignClients
+ * Service class for interacting with Mattermost API using Spring HTTP Interface clients
  */
 @Service
 public class MattermostService {
@@ -28,19 +28,19 @@ public class MattermostService {
     private static final int RATE_LIMIT_DELAY = 250;
     private static final Logger logger = LoggerFactory.getLogger(MattermostService.class);
 
-    private final ChannelsApiClient channelsApiClient;
-    private final PostsApiClient postsApiClient;
-    private final TeamsApiClient teamsApiClient;
+    private final ChannelsApi channelsApi;
+    private final PostsApi postsApi;
+    private final TeamsApi teamsApi;
     private final AuthenticationStrategy authenticationService;
 
     public MattermostService(
-            ChannelsApiClient channelsApiClient,
-            PostsApiClient postsApiClient,
-            TeamsApiClient teamsApiClient,
+            ChannelsApi channelsApi,
+            PostsApi postsApi,
+            TeamsApi teamsApi,
             AuthenticationStrategy authenticationService) {
-        this.channelsApiClient = channelsApiClient;
-        this.postsApiClient = postsApiClient;
-        this.teamsApiClient = teamsApiClient;
+        this.channelsApi = channelsApi;
+        this.postsApi = postsApi;
+        this.teamsApi = teamsApi;
         this.authenticationService = authenticationService;
     }
 
@@ -48,15 +48,15 @@ public class MattermostService {
         List<Channel> result = new ArrayList<>();
         try {
             User currentUser = authenticationService.getCurrentUser();
-            Team team = teamsApiClient.getTeamByName(teamName).getBody();
+            Team team = teamsApi.getTeamByName(teamName).getBody();
             if (team != null) {
-                List<Channel> channels = channelsApiClient.getChannelsForTeamForUser(currentUser.getId(), team.getId(), null, null).getBody();
+                List<Channel> channels = channelsApi.getChannelsForTeamForUser(currentUser.getId(), team.getId(), null, null).getBody();
                 if (CollectionUtils.isNotEmpty(channels)) {
                     result.addAll(channels);
                 }
             }
             return result;
-        } catch (FeignException e) {
+        } catch (WebClientResponseException e) {
             logger.error(String.format("Error fetching team %s's channels", teamName), e);
             throw new MattermostApiException(String.format("Failed to fetch team %s's channels", teamName), e);
         }
@@ -74,7 +74,7 @@ public class MattermostService {
         do {
             try {
                 response =
-                        postsApiClient.getPostsForChannel(
+                        postsApi.getPostsForChannel(
                                 channelId,
                                 page,
                                 DEFAULT_PAGE_SIZE,
@@ -96,7 +96,7 @@ public class MattermostService {
                 Thread.currentThread().interrupt();
                 logger.warn("Rate limiting delay interrupted", e);
                 break;
-            } catch (FeignException e) {
+            } catch (WebClientResponseException e) {
                 logger.error("Error fetching channel posts", e);
                 throw new MattermostApiException("Failed to fetch channel posts", e);
             }
@@ -117,7 +117,7 @@ public class MattermostService {
         do {
             try {
                 response =
-                        channelsApiClient.getAllChannels(
+                        channelsApi.getAllChannels(
                                 null,
                                 page,
                                 DEFAULT_PAGE_SIZE,
@@ -137,7 +137,7 @@ public class MattermostService {
                 Thread.currentThread().interrupt();
                 logger.warn("Rate limiting delay interrupted", e);
                 break;
-            } catch (FeignException e) {
+            } catch (WebClientResponseException e) {
                 logger.error("Error fetching channels", e);
                 throw new MattermostApiException("Failed to fetch channels", e);
             }
@@ -154,7 +154,7 @@ public class MattermostService {
         do {
             try {
                 response =
-                        teamsApiClient.getAllTeams(
+                        teamsApi.getAllTeams(
                             page,
                             DEFAULT_PAGE_SIZE,
                             false,
@@ -171,7 +171,7 @@ public class MattermostService {
                 Thread.currentThread().interrupt();
                 logger.warn("Rate limiting delay interrupted", e);
                 break;
-            } catch (FeignException e) {
+            } catch (WebClientResponseException e) {
                 logger.error("Error fetching teams", e);
                 throw new MattermostApiException("Failed to fetch teams", e);
             }

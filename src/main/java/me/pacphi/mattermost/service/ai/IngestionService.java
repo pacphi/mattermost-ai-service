@@ -3,9 +3,9 @@ package me.pacphi.mattermost.service.ai;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import me.pacphi.mattermost.api.ChannelsApiClient;
-import me.pacphi.mattermost.api.TeamsApiClient;
-import me.pacphi.mattermost.api.UsersApiClient;
+import me.pacphi.mattermost.api.ChannelsApi;
+import me.pacphi.mattermost.api.TeamsApi;
+import me.pacphi.mattermost.api.UsersApi;
 import me.pacphi.mattermost.model.Channel;
 import me.pacphi.mattermost.model.Post;
 import me.pacphi.mattermost.model.Team;
@@ -31,33 +31,33 @@ public class IngestionService {
 
     private static final Logger log = LoggerFactory.getLogger(IngestionService.class);
 
-    private final ChannelsApiClient channelsApiClient;
-    private final TeamsApiClient teamsApiClient;
-    private final UsersApiClient usersApiClient;
+    private final ChannelsApi channelsApi;
+    private final TeamsApi teamsApi;
+    private final UsersApi usersApi;
     private final VectorStore store;
     private final ObjectMapper objectMapper;
     private final TokenTextSplitter splitter = new TokenTextSplitter();
 
     public IngestionService(
-            ChannelsApiClient channelsApiClient,
-            TeamsApiClient teamsApiClient,
-            UsersApiClient usersApiClient,
+            ChannelsApi channelsApi,
+            TeamsApi teamsApi,
+            UsersApi usersApi,
             VectorStore store,
             ObjectMapper objectMapper) {
-        this.channelsApiClient = channelsApiClient;
-        this.teamsApiClient = teamsApiClient;
-        this.usersApiClient = usersApiClient;
+        this.channelsApi = channelsApi;
+        this.teamsApi = teamsApi;
+        this.usersApi = usersApi;
         this.store = store;
         this.objectMapper = objectMapper;
     }
 
     public void ingest(Post post) throws JsonProcessingException, UnsupportedEncodingException {
         Assert.notNull(post, "Post cannot be null");
-        Channel channel = channelsApiClient.getChannel(post.getChannelId()).getBody();
+        Channel channel = channelsApi.getChannel(post.getChannelId()).getBody();
         Assert.notNull(channel, "Channel cannot be null");
-        Team team = teamsApiClient.getTeam(channel.getTeamId()).getBody();
+        Team team = teamsApi.getTeam(channel.getTeamId()).getBody();
         Assert.notNull(team, "Team cannot be null");
-        User user = usersApiClient.getUser(post.getUserId()).getBody();
+        User user = usersApi.getUser(post.getUserId()).getBody();
         Assert.notNull(user, "User cannot be null");
         AttributedPost attributedPost = new AttributedPost(
             team, channel, post, user

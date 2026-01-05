@@ -56,22 +56,6 @@ mattermost:
     username: ${MATTERMOST_USERNAME:mmadmin}
     password: ${MATTERMOST_PASSWORD:mmp@ssw0rd}
     token: ${MATTERMOST_PERSONAL_ACCESS_TOKEN:}
-admin:
-  url: ${mattermost.base-url}
-channels:
-  url: ${mattermost.base-url}
-files:
-  url: ${mattermost.base-url}
-posts:
-  url: ${mattermost.base-url}
-preferences:
-  url: ${mattermost.base-url}
-teams:
-  url: ${mattermost.base-url}
-users:
-  url: ${mattermost.base-url}
-webhooks:
-  url: ${mattermost.base-url}
 
 ---
 
