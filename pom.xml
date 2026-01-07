@@ -57,7 +57,7 @@
 		<poi.version>5.4.1</poi.version>
 		<spring-ai.version>2.0.0-M1</spring-ai.version>
 		<spring-doc.version>3.0.1</spring-doc.version>
-		<spring-boot-hc5.version>1.2.1</spring-boot-hc5.version>
+		<spring-boot-hc5.version>2.0.0</spring-boot-hc5.version>
 		<spring-cloud-bindings.version>2.0.4</spring-cloud-bindings.version>
 	</properties>
 
